@@ -736,22 +736,26 @@ class Redet_As_0001_Public {
 
 		$actividades_encontradas_redet_as = $this->buscar_actividades_redet_as();
 
-		if (empty($actividades_encontradas_redet_as))
-		{
-			$vector_prospecto_encontrado_ra = [];
-			$vector_prospecto_encontrado_ra['encontrado'] = 0;
-			$vector_prospecto_encontrado_ra['id_actividades'] = [];
-		}
-		else
+		if (!(empty($actividades_encontradas_redet_as)))
 		{
 			$vector_prospecto_encontrado_ra = $this->prospecto_actividad_ra($lead_id, 'houzez_redet_as_cedula_rif_blanco', $actividades_encontradas_redet_as, '');
-		}
 
-		if ($vector_prospecto_encontrado_ra['encontrado'] == 1) 
-		{
-			$tipo_actividad_requerida_redet_as = 'houzez_redet_as_cedula_rif_blanco';
-			$this->cerrar_actividades_redet_as($lead_id, $tipo_actividad_requerida_redet_as, $actividades_encontradas_redet_as); 
-		} 
+			if ($vector_prospecto_encontrado_ra['encontrado'] == 1) 
+			{
+				$tipo_actividad_requerida_redet_as = 'houzez_redet_as_cedula_rif_blanco';
+				$this->cerrar_actividades_redet_as($lead_id, $tipo_actividad_requerida_redet_as, $actividades_encontradas_redet_as);
+			}
+			else
+			{
+				$vector_prospecto_encontrado_ra = $this->prospecto_actividad_ra($lead_id, 'houzez_redet_as_cedula_rif_duplicado', $actividades_encontradas_redet_as, '');
+
+				if ($vector_prospecto_encontrado_ra['encontrado'] == 1) 
+				{
+					$tipo_actividad_requerida_redet_as = 'houzez_redet_as_cedula_rif_duplicado';
+					$this->cerrar_actividades_redet_as($lead_id, $tipo_actividad_requerida_redet_as, $actividades_encontradas_redet_as);
+				}	
+			} 
+		}
 
 		echo json_encode( array(
 			'success' => true,
@@ -1016,7 +1020,7 @@ class Redet_As_0001_Public {
 	{
 		$vector_prospecto_encontrado_ra = [];
 		$vector_prospecto_encontrado_ra['encontrado'] = 0;
-		$vector_prospecto_encontrado_ra['id_actividades'] = []; 
+		$vector_prospecto_encontrado_ra['id_actividades'] = [];
 		
 		foreach ($actividades_abiertas_ra as $actividad)
 		{
@@ -1179,27 +1183,11 @@ class Redet_As_0001_Public {
 
 					$this->crear_actividad_redet_as($argumentos_actividad_general_ra);
 				}
-				else
-				{
-					foreach ($vector_prospecto_encontrado_ra['id_actividades'] as $id_actividad_ra)
-					{
-						foreach ($actividades_encontradas_ra as $actividad)
-						{
-							if ($actividad->activity_id == $id_actividad_ra)
-							{
-								$meta_redet_as = maybe_unserialize($actividad->meta);
-								$meta_redet_as['id_prospectos'] = $prospectos_ra;
-								$estatus_actividad_ra = "Abierta";
-								$this->actualizar_actividad_redet_as($id_actividad_ra, $meta_redet_as, $tiempo_actual_ra, $estatus_actividad_ra);
-							}
-						}
-					}
-				}
 			}
 		}
 		else
 		{
-			if ($vector_prospecto_encontrado_ra['encontrado'] == 1) 
+			if ($prospecto_encontrado_ra == 1) 
 			{
 				$tipo_actividad_requerida_ra = 'houzez_redet_as_cedula_rif_duplicado';
 				$this->cerrar_actividades_redet_as($lead_id_ra, $tipo_actividad_requerida_ra, $actividades_encontradas_ra);
